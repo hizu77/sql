@@ -87,5 +87,37 @@
    having count(*) = 3 or count(*) = 5
    ```
 
+10. Найти и вывести на экран все номера подкатегорий, в которым относится 
+    более десяти товаров.
+
+    ``` sql
+    select productsubcategoryid
+    from production.product
+    where productsubcategoryid is not null
+    group by productsubcategoryid
+    having count (*) > 10
+    ```
+
+11. Найти и вывести на экран номера товаров, которые всегда покупались в 
+    одном экземпляре за одну покупку.
+
+    ``` sql
+    select productid
+    from sales.salesorderdetail
+    group by productid
+    having max(orderqty) = 1
+    ```
+
+12. Найти и вывести на экран номер чека, SalesORDERID, на который приходится 
+    с наибольшим разнообразием товаров купленных на этот чек.
+
+    ``` sql
+    select top 1 with ties salesorderid
+    from sales.salesorderdetail
+    group by salesorderid
+    order by count(distinct productid) desc
+    ```
+
+
 
 
