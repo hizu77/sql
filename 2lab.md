@@ -57,6 +57,35 @@
     having count(*) > 1
     ```
 
-7.
+7. Найти и вывести на экран все номера чеков, на которые приходится более трех 
+   продуктов.
+
+   ``` sql
+   select salesorderid
+   from sales.salesorderdetail
+   group by salesorderid
+   having count(*) > 3
+   ```
+
+8. Найти и вывести на экран все номера продуктов, которые были куплены более 
+   трех раз.
+
+   ``` sql
+   select productid
+   from sales.salesorderdetail
+   group by productid
+   having count(*)	> 3
+   ```
+
+9. Найти и вывести на экран все номера продуктов, которые были куплены или 
+   три или пять раз.
+
+   ``` sql
+   select productid
+   from sales.salesorderdetail
+   group by productid
+   having count(*) = 3 or count(*) = 5
+   ```
+
 
 
