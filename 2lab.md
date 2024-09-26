@@ -118,6 +118,49 @@
     order by count(distinct productid) desc
     ```
 
+13. Найти и вывести на экран номер чека, SalesORDERID с наибольшей суммой 
+    покупки, исходя из того, что цена товара – это UnitPrice, а количество 
+    конкретного товара в чеке – это ORDERQty.
+
+    ``` sql
+    select top 1 with ties salesorderid
+    from sales.salesorderdetail
+    group by salesorderid
+    order by sum(unitprice * orderqty) desc
+    ```
+
+14. Определить количество товаров в каждой подкатегории, исключая товары,
+    для которых подкатегория не определена, и товары, у которых не определен цвет.
+
+    ``` sql
+    select count(*)
+    from production.product
+    where productsubcategoryid is not null and color is not null
+    group by productsubcategoryid
+    ```
+
+15. Получить список цветов товаров в порядке убывания количества товаров 
+    данного цвета.
+
+    ``` sql
+    select color
+    from production.product
+    where color is not null
+    group by color
+    order by count(*) desc
+    ```
+
+16.  Вывести на экран ProductID тех товаров, что всегда покупались в количестве 
+     более 1 единицы на один чек, при этом таких покупок было более двух.
+
+     ``` sql
+     select productid
+     from sales.salesorderdetail
+     group by productid
+     having min(orderqty) > 1 and count(*) > 2
+     ```
+
+
 
 
 
