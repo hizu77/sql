@@ -118,6 +118,25 @@
     товаров в них.
 
     ``` sql
+    select pc.Name, count(distinct ps.ProductSubcategoryID), count(distinct p.ProductID)
+    from Production.Product as p join Production.ProductSubcategory as ps
+    on p.ProductSubcategoryID = ps.ProductSubcategoryID
+    join Production.ProductCategory as pc
+    on pc.ProductCategoryID = ps.ProductCategoryID
+    group by pc.Name
+    ```
+
+12. Вывести на экран номер кредитного рейтинга и количество товаров, 
+    поставляемых компаниями, имеющими этот кредитный рейтинг.
+
+    ``` sql
+    select v.CreditRating, count(pv.ProductID)
+    from Purchasing.Vendor as v join Purchasing.ProductVendor as pv
+    on v.BusinessEntityID = pv.BusinessEntityID
+    group by v.CreditRating
+    ```
+
+
 
 
 
