@@ -105,5 +105,39 @@
     		)
     )
     ```
-    
 
+6. Найти такие товары, которые были куплены такими покупателями, у которых 
+   они присутствовали в каждой их покупке.
+
+   ``` sql
+	select distinct sod.ProductId
+	from Sales.SalesOrderDetail as sod join Sales.SalesOrderHeader as soh
+	on sod.SalesOrderID = soh.SalesOrderID
+	group by soh.CustomerID, sod.ProductID
+	having count(*) > 1 and count(*) = 
+	(
+		select count(soh1.CustomerId)
+		from Sales.SalesOrderHeader as soh1
+		where soh1.CustomerID = soh.CustomerID
+	)
+    ```
+
+7. Найти покупателей, у которых есть товар, присутствующий в каждой 
+   покупке/чеке.
+
+   ``` sql
+    select distinct soh_.CustomerId
+    from Sales.SalesOrderDetail as sod_ join Sales.SalesOrderHeader as soh_
+    on sod_.SalesOrderID = soh_.SalesOrderID
+    group by soh_.CustomerID, sod_.ProductID
+    having count(*) > 1 and count(*) >=
+    (
+    	select count(distinct soh.SalesOrderID)
+    	from Sales.SalesOrderHeader as soh
+    	where soh.CustomerID = soh_.CustomerID
+    	
+    )
+   ```
+
+8. Найти такой товар или товары, которые были куплены не более чем тремя 
+   различными покупателями.
