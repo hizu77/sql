@@ -46,3 +46,64 @@
 
 4.  Вывести список продуктов, цена которых выше средней цены товаров в 
     подкатегории, к которой относится товар.
+
+    ``` sql
+    select p.Name
+    from Production.Product as p
+    where p.ListPrice >
+    (
+        select avg(p1.ListPrice)
+        from Production.Product as p1
+        where p.ProductSubcategoryID = p1.ProductSubcategoryID
+        group by p1.ProductSubcategoryID
+    )
+    ```
+
+5. Найти такие товары, которые были куплены более чем одним покупателем, при 
+    этом все покупатели этих товаров покупали товары только одного цвета и товары 
+    не входят в список покупок покупателей, купивших товары только двух цветов.
+
+    ``` sql
+    select distinct sod_.ProductId
+    from Sales.SalesOrderDetail as sod_ join Sales.SalesOrderHeader as soh_
+    on sod_.SalesOrderID = soh_.SalesOrderID
+    where 
+    (
+    	select count(distinct soh.CustomerID)
+    	from Sales.SalesOrderHeader as soh join Sales.SalesOrderDetail as sod
+    	on soh.SalesOrderID = sod.SalesOrderID
+    	where sod_.ProductID = sod.ProductID
+    ) > 1
+    and
+    not exists
+    (
+    	select soh.CustomerId
+    	from Sales.SalesOrderHeader as soh join Sales.SalesOrderDetail as sod
+    	on soh.SalesOrderID = sod.SalesOrderID
+    	join Production.Product as p
+    	on p.ProductID = sod.ProductID
+    	where sod_.ProductID = sod.ProductID
+    	group by soh.CustomerID
+    	having count(distinct p.Color) > 1
+    )
+    and sod_.ProductID not in
+    (
+        select p1.ProductId
+    	from Production.Product as p1 join Sales.SalesOrderDetail as sod1
+    	on p1.ProductID = sod1.UnitPrice
+    	join Sales.SalesOrderHeader as soh1
+    	on soh1.SalesOrderID = sod1.SalesOrderID
+    	where soh1.CustomerID in
+    	(
+    		select soh.CustomerID
+    		from Sales.SalesOrderHeader as soh join Sales.SalesOrderDetail as sod
+    		on soh.SalesOrderID = sod.SalesOrderID
+    		join Production.Product as p
+    		on p.ProductID = sod.ProductID
+    		group by soh.CustomerID
+    		having count(distinct p.Color) = 2
+    		)
+    )
+    ```
+    
+
