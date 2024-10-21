@@ -141,3 +141,86 @@
 
 8. Найти такой товар или товары, которые были куплены не более чем тремя 
    различными покупателями.
+
+   ``` sql
+   	select p_.Name
+	from Production.Product as p_
+	where 
+	(
+		select count(distinct soh.CustomerId)
+		from Sales.SalesOrderDetail as sod join Sales.SalesOrderHeader as soh
+		on sod.SalesOrderID = soh.SalesOrderID
+		where sod.ProductID = p_.ProductID
+	) between 1 and 3
+   ```
+
+9. Найти все товары, такие что их покупали всегда с товаром, цена которого 
+   максимальна в своей категории
+
+   ``` sql
+   	select distinct p_.ProductId
+	from Production.Product as p_ join Sales.SalesOrderDetail as sod_
+	on p_.ProductID = sod_.ProductID
+	where sod_.SalesOrderID not in
+	(
+		select sod.SalesOrderId
+		from Sales.SalesOrderDetail as sod
+		where 
+		(
+		select top 1 p.ProductId
+		from Production.Product as p join Production.ProductSubcategory as ps
+		on p.ProductSubcategoryID = ps.ProductSubcategoryID
+		where ps.ProductSubcategoryID = p_.ProductSubcategoryID
+		order by p.ListPrice desc
+		) not in
+		(
+		select sod.ProductId
+		from Sales.SalesOrderDetail as sod
+		where sod.SalesOrderID = sod_.SalesOrderID
+		)
+	)
+   ```
+
+10. Найти номера тех покупателей, у которых есть как минимум два чека, и 
+    каждый из этих чеков содержит как минимум три товара, каждый из которых как
+    минимум был куплен другими покупателями три раза.
+
+    ``` sql
+    	select distinct soh_.CustomerId
+	from Sales.SalesOrderHeader as soh_
+	where
+	(
+		select count(distinct soh.SalesOrderId)
+		from Sales.SalesOrderHeader as soh
+		where soh.CustomerID = soh_.CustomerID
+	) >= 2
+	and 
+	(
+	select count(*)
+	from sales.SalesOrderHeader as soh1 join Sales.SalesOrderDetail as sod1
+	on soh1.SalesOrderID = sod1.SalesOrderID
+	where soh1.CustomerID = soh_.CustomerID and
+		(
+			select count(distinct sod.ProductID)
+			from Sales.SalesOrderDetail as sod
+			where sod.SalesOrderID = soh1.SalesOrderID and
+			(
+				select count(distinct sod2.SalesOrderID)
+				from Sales.SalesOrderDetail as sod2 join Sales.SalesOrderHeader as soh2
+				on sod2.SalesOrderID = soh2.SalesOrderID
+				where soh1.CustomerID != soh2.CustomerID and sod2.ProductID = sod.ProductID
+			) >= 3
+		) >= 3
+	) = 
+	(
+	select count(*)
+	from Sales.SalesOrderHeader as soh
+	where soh.CustomerID = soh_.CustomerID
+	)
+ 	```
+
+11. Найти все чеки, в которых каждый товар был куплен дважды этим же 
+    покупателем.
+
+    ``` sql
+    
