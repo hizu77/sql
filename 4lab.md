@@ -179,7 +179,7 @@
 		where sod.SalesOrderID = sod_.SalesOrderID
 		)
 	)
-   ```
+    ```
 
 10. Найти номера тех покупателей, у которых есть как минимум два чека, и 
     каждый из этих чеков содержит как минимум три товара, каждый из которых как
@@ -217,10 +217,86 @@
 	from Sales.SalesOrderHeader as soh
 	where soh.CustomerID = soh_.CustomerID
 	)
- 	```
+    ```
 
 11. Найти все чеки, в которых каждый товар был куплен дважды этим же 
     покупателем.
 
+	``` sql
+	select distinct soh_.SalesOrderId
+	from Sales.SalesOrderHeader as soh_
+	where not exists
+	(
+		select sod.ProductId
+		from Sales.SalesOrderDetail as sod
+		where soh_.SalesOrderID = sod.SalesOrderID and
+		(
+			select count(*)
+			from Sales.SalesOrderHeader as soh1 join Sales.SalesOrderDetail as sod1
+			on soh1.SalesOrderID = sod1.SalesOrderID
+			where soh1.CustomerID = soh_.CustomerID and sod1.ProductID = sod.ProductID
+		) != 2
+	)
+ 	```
+
+12. Найти товары, которые были куплены минимум три раза различными 
+	покупателями.
+
+	``` sql
+	select distinct sod_.ProductId
+	from Sales.SalesOrderDetail as sod_
+	where 
+	(
+		select count(distinct soh.CustomerID)
+		from Sales.SalesOrderDetail as sod join Sales.SalesOrderHeader as soh
+		on sod.SalesOrderID = soh.SalesOrderID
+		where sod.ProductID = sod_.ProductID
+	) >= 3
+ 	```
+
+13. Найти такую подкатегорию или подкатегории товаров, которые содержат 
+    более трех товаров, купленных более трех раз.
+
     ``` sql
+    	select distinct p_.ProductSubcategoryId
+	from Production.Product as p_
+	where 
+	(
+		select count(*)
+		from Production.Product as p
+		where p.ProductSubcategoryID = p_.ProductSubcategoryID and
+		(
+			select count(*)
+			from Sales.SalesOrderDetail as sod
+			where p.ProductID = sod.ProductID
+		) > 3
+	) > 3
+    ```
+
+15. Найти те товары, которые не были куплены более трех раз, и как минимум 
+    дважды одним и тем же покупателем.
+
+    ``` sql
+	select distinct sod_.ProductId
+	from Sales.SalesOrderDetail as sod_
+	where 
+	(
+		select count(distinct sod.SalesOrderId)
+		from Sales.SalesOrderDetail as sod
+		where sod.ProductID = sod_.ProductID
+	) < 3
+	and not exists
+	(
+		select soh.CustomerID
+		from Sales.SalesOrderDetail as sod join Sales.SalesOrderHeader as soh
+		on sod.SalesOrderID = soh.SalesOrderID
+		where sod.ProductID = sod_.ProductID
+		group by soh.CustomerID, sod.ProductID
+		having count(*) >= 2
+	)
+     ``` 
+
+
+ 	
+
     
