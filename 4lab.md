@@ -17,16 +17,15 @@
     сумму покупки исходя из цены товара без скидки (UnitPrice).
 
    ``` sql
-    select soh1.CustomerID
-    from Sales.SalesOrderHeader as soh1
-    where soh1.SalesOrderID = 
-    (
-      select top 1 soh2.SalesOrderID
-      from Sales.SalesOrderHeader as soh2 join Sales.SalesOrderDetail as sod
-      on soh2.SalesOrderID = sod.SalesOrderID
-      group by soh2.SalesOrderID
-      order by max(sod.OrderQty * sod.UnitPrice) desc
-    )
+    	select soh.CustomerId
+	from Sales.SalesOrderHeader as soh
+	where soh.SalesOrderID = 
+	(
+		select top 1 sod.SalesOrderId
+		from Sales.SalesOrderDetail as sod
+		group by sod.SalesOrderID
+		order by sum(UnitPrice * OrderQty) desc
+	)
    ```
 
 3. Найти такие продукты, которые покупал только один покупатель.
