@@ -73,7 +73,7 @@
     select p.ProductId, pp.Purchases, pcc.CustomersCount
     from Production.Product as p left join ProductCustomersCount as pcc 
     on p.ProductID = pcc.ProductId
-    join ProductPurchases as pp
+    left join ProductPurchases as pp
     on pcc.ProductId = pp.ProductId
     ```
 
@@ -97,3 +97,59 @@
 
 5. Найти номера покупателей, у которых не было нет ни одной пары чеков с 
 одинаковым количеством наименований товаров.
+    ``` sql
+    with temp (CustomerId, SalesOrderId, Purchases)
+    as
+    (
+    	select soh.CustomerId, sod.SalesOrderId, sod.ProductId
+    	from Sales.SalesOrderHeader as soh join Sales.SalesOrderDetail as sod
+    	on soh.SalesOrderID = sod.SalesOrderID
+    )
+    
+    select s.CustomerId
+    from Sales.Customer as s
+    where s.CustomerID not in
+    (
+    	select distinct t1.CustomerId
+    	from temp as t1 join temp as t2
+    	on t1.CustomerId = t2.CustomerId
+    	where t1.SalesOrderId != t2.SalesOrderId and t1.Purchases = t2.Purchases
+    )
+    ```
+
+6. Найти номера покупателей, у которых все купленные ими товары были 
+куплены как минимум дважды, т.е. на два разных чека.
+    ``` sql
+    with MismatchingProducts (ProductId)
+    as
+    (
+    	select sod.ProductId
+    	from Sales.SalesOrderDetail as sod
+    	group by sod.ProductId
+    	having count(*) < 2
+    ),
+    CustomerProducts (CustomerId, ProductId)
+    as
+    (
+    	select soh.CustomerId, sod.ProductId
+    	from Sales.SalesOrderHeader as soh join Sales.SalesOrderDetail as sod
+    	on soh.SalesOrderID = sod.SalesOrderID
+    )
+    
+    select distinct cp.CustomerId
+    from CustomerProducts as cp
+    where not exists
+    (
+    	select sod.ProductId
+    	from Sales.SalesOrderDetail as sod join Sales.SalesOrderHeader as soh
+    	on sod.SalesOrderID = soh.SalesOrderID
+    	where soh.CustomerID = cp.CustomerId 
+    	and sod.ProductID = any 
+    	(
+    	(
+    		select mp.ProductId
+    		from MismatchingProducts as mp
+    	)
+    	)
+    )
+    ```
