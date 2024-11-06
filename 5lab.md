@@ -153,3 +153,44 @@
     	)
     )
     ```
+
+7. TestTask
+    ```
+    with TotalCategoryCount(CategoryCount) as
+    (
+    	select count(distinct ProductCategoryId)
+    	from Production.ProductCategory
+    ),
+    
+    ProductCategory (ProductId, CategoryId) as
+    (
+    	select p.ProductId, ps.ProductCategoryId
+    	from Production.Product as p join Production.ProductSubcategory as ps
+    	on p.ProductSubcategoryID = ps.ProductSubcategoryID
+    ),
+    
+    CustomerCategoryCount (CustomerId, CategoryCount) as 
+    (
+    	select soh.CustomerId, count(distinct pc.CategoryId)
+    	from Sales.SalesOrderHeader as soh join Sales.SalesOrderDetail as sod
+    	on soh.SalesOrderID = sod.SalesOrderID
+    	join ProductCategory as pc
+    	on pc.ProductId = sod.ProductID
+    	group by soh.CustomerID
+    ),
+    
+    CustomerPurchases (CustomerId, TotalPurchases, TotalPrice) as 
+    (
+    	select soh.CustomerId, count(distinct sod.SalesOrderID), sum(sod.UnitPrice * sod.OrderQty)
+    	from Sales.SalesOrderDetail as sod join Sales.SalesOrderHeader as soh
+    	on soh.SalesOrderId = sod.SalesOrderId
+    	group by soh.CustomerID
+    )
+    
+    select ccc.CustomerId, cp.TotalPurchases, cp.TotalPrice / cp.TotalPurchases
+    from CustomerCategoryCount as ccc join CustomerPurchases as cp
+    on ccc.CustomerId = cp.CustomerId
+    where ccc.CategoryCount > (select CategoryCount from TotalCategoryCount) / 2
+    ```
+
+
