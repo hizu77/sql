@@ -155,7 +155,7 @@
     ```
 
 7. TestTask
-    ```
+    ``` sql
     with TotalCategoryCount(CategoryCount) as
     (
     	select count(distinct ProductCategoryId)
