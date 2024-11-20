@@ -73,3 +73,26 @@
     join Sales.SalesOrderHeader as soh
     on sod.SalesOrderID = soh.SalesOrderID
     ```
+
+    ```
+    with product_cte (ProductID, OrderQty, OrderDate, Amount, DateNumber) AS (
+        select
+            sod.ProductID,
+            sod.OrderQty,
+            soh.OrderDate,
+            SUM(sod.OrderQty) over (PARTITION BY sod.ProductID ORDER BY soh.OrderDate DESC ROWS 2 PRECEDING),
+            ROW_NUMBER() OVER(PARTITION BY sod.ProductID ORDER BY soh.OrderDate DESC)
+        FROM Sales.SalesOrderDetail AS sod
+        INNER JOIN Sales.SalesOrderHeader AS soh
+        ON sod.SalesOrderID = soh.SalesOrderID
+    )
+    
+    SELECT
+        p.ProductID,
+        p.Name,
+        product_cte.Amount / 3.0
+    FROM Production.Product AS p
+    INNER JOIN product_cte
+    ON p.ProductID = product_cte.ProductID
+    WHERE product_cte.DateNumber = 3;
+```
