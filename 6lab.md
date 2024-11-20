@@ -74,7 +74,7 @@
     on sod.SalesOrderID = soh.SalesOrderID
     ```
 
-    ```
+    ``` sql
     with product_cte (ProductID, OrderQty, OrderDate, Amount, DateNumber) AS (
         select
             sod.ProductID,
